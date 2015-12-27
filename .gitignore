@@ -4,3 +4,4 @@ Gemfile.bak
 .bundle
 vendor
 *~
+logstash-*/
