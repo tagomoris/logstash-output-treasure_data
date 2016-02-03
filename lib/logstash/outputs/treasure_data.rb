@@ -51,7 +51,7 @@ class LogStash::Outputs::TreasureData < LogStash::Outputs::Base
   config :send_timeout, validate: :number, default: nil
 
   config :flush_size, validate: :number, default: 10000      # 10,000 records for flush
-  config :flush_interval, validate: :number, default: 60 * 5 # 15min for flush
+  config :flush_interval, validate: :number, default: 60 * 5 # 5min for flush
 
   public
   def register

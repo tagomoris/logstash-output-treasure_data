@@ -1,17 +1,17 @@
 Gem::Specification.new do |s|
   s.name = 'logstash-output-treasure_data'
-  s.version         = "0.9.0"
-  s.licenses = ["Apache License (2.0)"]
-  s.summary = "Logstash plugin to store data into Treasure Data service."
+  s.version     = "0.9.0"
+  s.licenses    = ["Apache License (2.0)"]
+  s.summary     = "Logstash plugin to store data into Treasure Data service."
   s.description = "This gem is a logstash plugin to store data from logstash to Treasure Data service. This gem is not a stand-alone program."
-  s.authors = ["Satoshi Tagomori"]
-  s.email = "tagomoris@gmail.com"
-  s.homepage = "https://github.com/tagomoris/logstash-output-treasure_data"
+  s.authors     = ["Satoshi Tagomori"]
+  s.email       = "tagomoris@gmail.com"
+  s.homepage    = "https://github.com/tagomoris/logstash-output-treasure_data"
   s.require_paths = ["lib"]
 
   # Files
   s.files = Dir['lib/**/*','spec/**/*','vendor/**/*','*.gemspec','*.md','CONTRIBUTORS','Gemfile','LICENSE','NOTICE.TXT']
-   # Tests
+  # Tests
   s.test_files = s.files.grep(%r{^(test|spec|features)/})
 
   # Special flag to let us know this is actually a logstash plugin
