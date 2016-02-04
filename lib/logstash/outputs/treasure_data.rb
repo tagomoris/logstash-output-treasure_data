@@ -163,4 +163,4 @@ class LogStash::Outputs::TreasureData < LogStash::Outputs::Base
   def close
     buffer_flush(final: true)
   end
-end # class LogStash::Outputs::Example
+end # class LogStash::Outputs::TreasureData
