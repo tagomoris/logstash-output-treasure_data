@@ -11,8 +11,6 @@ require "uuid"
 require "stringio"
 require "zlib"
 
-require_relative "./treasure_data/version"
-
 # Logstash output plugin to send data to Treasure Data service.
 
 class LogStash::Event
@@ -36,6 +34,9 @@ class LogStash::Outputs::TreasureData < LogStash::Outputs::Base
   RECORD_SIZE_LIMIT = 32 * 1024 * 1024
 
   UUID_FORMAT = /\A[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\z/
+
+  require 'rubygems'
+  VERSION = Gem::Specification.load(File.expand_path('../../../../logstash-output-treasure_data.gemspec', __FILE__)).version
 
   config :apikey, validate: :password, required: true
   config :auto_create_table, validate: :boolean, default: true
