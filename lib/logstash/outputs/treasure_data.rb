@@ -16,6 +16,8 @@ require "zlib"
 class LogStash::Outputs::TreasureData < LogStash::Outputs::Base
   include Stud::Buffer
 
+  concurrency :shared if self.respond_to?(:concurrency)
+
   config_name "treasure_data"
 
   IMPORT_SIZE_LIMIT = 32 * 1024 * 1024
@@ -51,7 +53,7 @@ class LogStash::Outputs::TreasureData < LogStash::Outputs::Base
     TreasureData::API.validate_database_name(@database)
     TreasureData::API.validate_table_name(@table)
 
-    client_opts = {
+    @client_opts = {
       ssl: @use_ssl,
       http_proxy: @http_proxy,
       user_agent: @user_agent,
@@ -60,7 +62,6 @@ class LogStash::Outputs::TreasureData < LogStash::Outputs::Base
       read_timeout: @read_timeout,
       send_timeout: @send_timeout
     }
-    @client = TreasureData::Client.new(@apikey.value, client_opts)
 
     buffer_initialize(
       max_items: @flush_size,
@@ -71,6 +72,7 @@ class LogStash::Outputs::TreasureData < LogStash::Outputs::Base
 
   public
   def receive(event)
+    # Logstash::Output::Base#multi_receive(events) calls this method by `events.each{|event| receive(event) }`
     record = event.clone
     @logger.debug "receive a event"
 
@@ -116,15 +118,16 @@ class LogStash::Outputs::TreasureData < LogStash::Outputs::Base
       f.finish
     }
     data = io.string
+    client = TreasureData::Client.new(@apikey.value, @client_opts)
     @logger.debug "sending gzipped chunk #{uuid}, #{data.bytesize} bytes"
     begin
-      @client.import(@database, @table, "msgpack.gz", data, data.bytesize, uuid)
+      client.import(@database, @table, "msgpack.gz", data, data.bytesize, uuid)
 
     rescue TreasureData::NotFoundError => e
       raise unless @auto_create_table
 
       @logger.info "creating missing table #{@table} on database #{@database} for chunk #{uuid}"
-      ensure_table_exists(@client, @database, @table)
+      ensure_table_exists(client, @database, @table)
       @logger.info "retrying upload chunk #{uuid}"
       retry
     end
