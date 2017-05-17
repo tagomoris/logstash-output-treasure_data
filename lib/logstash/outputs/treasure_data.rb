@@ -13,17 +13,6 @@ require "zlib"
 
 # Logstash output plugin to send data to Treasure Data service.
 
-class LogStash::Event
-  def to_msgpack(packer=nil)
-    # LogStash objects (ex: LogStash::Timestamp) are impossible to serialize by msgpack
-    begin
-      @data.reject{|a,b| a == TIMESTAMP }.to_msgpack
-    rescue ArgumentError, NoMethodError
-      LogStash::Json.load(LogStash::Json.dump(@data)).to_msgpack
-    end
-  end
-end
-
 class LogStash::Outputs::TreasureData < LogStash::Outputs::Base
   include Stud::Buffer
 
@@ -85,18 +74,24 @@ class LogStash::Outputs::TreasureData < LogStash::Outputs::Base
     record = event.clone
     @logger.debug "receive a event"
 
-    record['time'] ||= (record.timestamp.to_i || Time.now.to_i)
+    record.set('time', record.timestamp.to_i || Time.now.to_i) unless record.get('time')
     if record.to_hash.size > RECORD_KEYS_LIMIT
       raise "Too many number of keys (#{record.keys.size} keys)"
     end
 
-    row = record.to_msgpack
+    row = convert_to_msgpack(record)
     if row.bytesize > RECORD_SIZE_LIMIT
       raise "Too large record (#{row.bytesize} bytes with keys:#{record.keys.join(',')})"
     end
 
     buffer_receive(row)
     @logger.debug "buffered a event"
+  end
+
+  def convert_to_msgpack(record)
+    record.to_hash.to_msgpack
+  rescue ArgumentError, NoMethodError
+    LogStash::Json.load(LogStash::Json.dump(record.to_hash)).to_msgpack
   end
 
   public
