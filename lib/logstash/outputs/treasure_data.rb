@@ -6,8 +6,8 @@ require "stud/buffer"
 
 require "td-client"
 require "msgpack"
-require "uuid"
 
+require "securerandom"
 require "stringio"
 require "zlib"
 
@@ -58,7 +58,6 @@ class LogStash::Outputs::TreasureData < LogStash::Outputs::Base
   def register
     @empty_gz_data = TreasureData::API.create_empty_gz_data
     @user_agent = "logstash-output-treasure_data: #{VERSION}".freeze
-    @uuid = UUID.new
 
     TreasureData::API.validate_database_name(@database)
     TreasureData::API.validate_table_name(@table)
@@ -105,7 +104,7 @@ class LogStash::Outputs::TreasureData < LogStash::Outputs::Base
     @logger.debug "flushing #{events} events (may include chunk uuid)"
     return if events.size < 1
     if UUID_FORMAT !~ events.first
-      new_uuid = @uuid.generate
+      new_uuid = SecureRandom.uuid
       @logger.debug "adding chunk uuid #{new_uuid}"
       events.unshift new_uuid
     end
